@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MealGram - 7-Day Meal Plan</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #c5c5c5;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col items-center py-6 px-2 sm:px-4">
+
+  <!-- Instagram Profile Header -->
+  <header class="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-5 mb-6 shadow-sm">
+    <div class="flex items-center space-x-6">
+      <div id="profile-avatar-container" class="relative w-16 h-16 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-[2.5px] flex-shrink-0">
+        <div class="w-full h-full bg-white rounded-full p-[2px]">
+          <div id="profile-avatar-inner" class="w-full h-full bg-gray-100 rounded-full flex items-center justify-center font-bold text-xl text-gray-700 overflow-hidden">
+            J
+          </div>
+        </div>
+      </div>
+      <div class="flex-1 flex justify-around text-center">
+        <div>
+          <span class="block font-bold text-sm text-gray-900">8</span>
+          <span class="text-[11px] text-gray-500">posts</span>
+        </div>
+        <div>
+          <span class="block font-bold text-sm text-gray-900">100%</span>
+          <span class="text-[11px] text-gray-500">completed</span>
+        </div>
+        <div>
+          <span class="block font-bold text-sm text-gray-900">7 Days</span>
+          <span class="text-[11px] text-gray-500">plan</span>
+        </div>
+      </div>
+    </div>
+    <div class="mt-3 space-y-1">
+      <!-- SECRET TRIGGER: Double-click your name to unlock editor mode -->
+      <h1 ondblclick="toggleMasterEditor()" class="font-bold text-sm text-gray-900 cursor-pointer select-none" title="Double click to unlock editor">
+        <span id="profile-name">John Angel Baring</span> <span id="edit-mode-badge" class="text-[10px] text-gray-400 font-normal hidden">(Editing Enabled)</span>
+      </h1>
+      <p id="profile-subtitle" class="text-xs text-gray-600 font-medium">1st Year BSA Student | Xavier University</p>
+      <p id="profile-bio" class="text-xs text-gray-500 leading-relaxed">
+        🥗 7-Day Meal Plan Documentation Project<br>
+        📊 Complete Nutritional Breakdown
+      </p>
+    </div>
+
+    <!-- Profile Edit Button (Only visible when unlocked) -->
+    <div id="profile-edit-btn-container" class="mt-3"></div>
+
+    <!-- Hidden Profile Editor Drawer -->
+    <div id="profile-editor-drawer" class="hidden mt-4 pt-3 border-t border-gray-200 space-y-3 bg-gray-50 p-3 rounded-xl">
+      <span class="text-xs font-bold text-gray-900 uppercase block">Edit Profile Info</span>
+      <div>
+        <label class="block text-[11px] font-semibold text-gray-600 mb-1">Profile Picture (Image URL or Filename):</label>
+        <input type="text" id="input-prof-img" class="w-full text-xs p-2 border border-gray-300 rounded-lg bg-white">
+      </div>
+      <div>
+        <label class="block text-[11px] font-semibold text-gray-600 mb-1">Full Name:</label>
+        <input type="text" id="input-prof-name" class="w-full text-xs p-2 border border-gray-300 rounded-lg bg-white">
+      </div>
+      <div>
+        <label class="block text-[11px] font-semibold text-gray-600 mb-1">Subtitle (School/Program):</label>
+        <input type="text" id="input-prof-sub" class="w-full text-xs p-2 border border-gray-300 rounded-lg bg-white">
+      </div>
+      <div>
+        <label class="block text-[11px] font-semibold text-gray-600 mb-1">Bio Description:</label>
+        <textarea id="input-prof-bio" rows="2" class="w-full text-xs p-2 border border-gray-300 rounded-lg bg-white"></textarea>
+      </div>
+      <button onclick="saveProfileEdit()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 rounded-lg">
+        Save Profile Changes
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Feed Container -->
+  <main id="feed-container" class="w-full max-w-md space-y-6">
+    <!-- Posts injected dynamically -->
+  </main>
+
+  <!-- Script logic -->
+  <script>
+    const defaultProfileData = {
+      name: "John Angel Baring",
+      subtitle: "1st Year BSA Student | Xavier University",
+      bio: "🥗 7-Day Meal Plan Documentation Project<br>\n📊 Complete Nutritional Breakdown",
+      avatar: "pfp.jpg"
+    };
+
+    const defaultMealPlanData = [
+      {
+        day: "Day 1: Tuesday",
+        username: "johnangel",
+        meals: [
+          {
+            type: "Breakfast",
+            image: "1.1.jpg",
+            caption: "For my breakfast today, I had <b>Malunggay Pandesal</b> and a <b>Scrambled Egg</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates:</b> The pandesal contains wheat flour which supplies the primary energy needed to start the morning.<br>• <b>Protein:</b> The egg contains protein that helps build and repair body tissues.<br>• <b>Vitamins:</b> The malunggay leaves blended into the bread contain essential vitamins."
+          },
+          {
+            type: "Lunch",
+            image: "1.2.jpg",
+            caption: "For my lunch today, I ate <b>2 cups of white rice</b> with savory <b>pork Humba</b>, a fresh <b>banana</b>, and a bottle of <b>Yakult</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates:</b> The rice and banana contain energy sources to sustain my afternoon activities.<br>• <b>Protein:</b> The pork contains protein to keep me full.<br>• <b>Fats:</b> The dish contains cooking oil and pork fats.<br>• <b>Vitamins:</b> The banana contains potassium and Yakult contains probiotics supporting digestion."
+          },
+          {
+            type: "Dinner",
+            image: "1.3.jpg",
+            caption: "For my dinner today, I had <b>2 cups of rice</b> with <b>San Marino Corned Tuna</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates:</b> The rice contains starches providing evening energy.<br>• <b>Protein:</b> The tuna contains lean fish protein for recovery.<br>• <b>Fats:</b> The canned tuna contains healthy natural oils.<br>• <b>Minerals:</b> The preparation contains sodium and other essential minerals."
+          }
+        ]
+      },
+      {
+        day: "Day 2: Wednesday",
+        username: "johnangel",
+        meals: [
+          {
+            type: "Breakfast",
+            image: "2.1.jpg",
+            caption: "For my breakfast today, I had <b>2 cups of rice</b>, a <b>sunny-side-up egg</b>, and a <b>banana</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates:</b> The rice and banana contain energy to start the day.<br>• <b>Protein:</b> The egg contains protein to support daily muscle function."
+          },
+          {
+            type: "Lunch",
+            image: "2.2.jpg",
+            caption: "For my lunch today, I had <b>1 cup of rice</b>, <b>pancit</b>, and a bottle of <b>Dutchmill</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates:</b> The noodles and rice contain energy sources.<br>• <b>Fats:</b> The cooking oil and dairy contain dietary fats.<br>• <b>Vitamins and Minerals:</b> The ingredients contain various micronutrients."
+          },
+          {
+            type: "Dinner",
+            image: "2.3.jpg",
+            caption: "For my dinner today, I had <b>Pinakbet</b> and <b>1 cup of rice</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates:</b> The rice contains energy-yielding starches.<br>• <b>Vitamins and Minerals:</b> The mixed vegetables contain substantial dietary minerals and vitamins."
+          }
+        ]
+      },
+      {
+        day: "Day 3: Thursday",
+        username: "johnangel",
+        meals: [
+          {
+            type: "Breakfast",
+            image: "3.1.jpg",
+            caption: "For my breakfast today, I just had <b>Boiled Eggs</b>.<br><br>What is inside my food:<br>• <b>Protein:</b> The eggs contain high-value protein to kick off the morning."
+          },
+          {
+            type: "Lunch",
+            image: "3.2.jpg",
+            caption: "For my lunch today, I ate <b>2 cups of rice</b>, <b>Chopsuey</b>, and an <b>orange</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates:</b> The rice contains carbohydrates for afternoon stamina.<br>• <b>Vitamins:</b> The orange and vegetables contain Vitamin C and essential nutrients."
+          },
+          {
+            type: "Dinner",
+            image: "3.3.jpg",
+            caption: "For my dinner today, I had <b>2 cups of rice</b>, <b>Fried Chicken</b>, and a glass of <b>milk</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates and Protein:</b> The rice contains carbs while the chicken contains protein.<br>• <b>Fats and Minerals:</b> The cooking oil contains fats and the milk contains calcium."
+          }
+        ]
+      },
+      {
+        day: "Day 4: Friday",
+        username: "johnangel",
+        meals: [
+          {
+            type: "Breakfast",
+            image: "4.1.jpg",
+            caption: "For my breakfast today, I had <b>Wheat Bread</b> and <b>Scrambled Eggs</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates:</b> The wheat bread contains complex carbohydrates.<br>• <b>Protein:</b> The eggs contain protein supporting physical recovery."
+          },
+          {
+            type: "Lunch",
+            image: "4.2.jpg",
+            caption: "For my lunch today, I had <b>2 cups of rice</b>, <b>Pancit</b>, and an <b>apple</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates:</b> The rice and noodles contain ample energy.<br>• <b>Vitamins:</b> The apple contains dietary fiber and vitamins."
+          },
+          {
+            type: "Dinner",
+            image: "4.3.jpg",
+            caption: "For my dinner today, I had <b>2 cups of rice</b>, <b>Pinakbet</b>, and a glass of <b>milk</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates and Minerals:</b> The rice provides energy and the vegetables contain minerals.<br>• <b>Proteins and Fats:</b> The milk contains nutrients supporting evening recovery."
+          }
+        ]
+      },
+      {
+        day: "Day 5: Saturday",
+        username: "johnangel",
+        meals: [
+          {
+            type: "Breakfast",
+            image: "5.1.jpg",
+            caption: "For my breakfast today, I had <b>Boiled Eggs</b> and a glass of <b>milk</b>.<br><br>What is inside my food:<br>• <b>Protein:</b> The eggs contain substantial protein.<br>• <b>Minerals:</b> The milk contains calcium supporting bone health."
+          },
+          {
+            type: "Lunch",
+            image: "5.2.jpg",
+            caption: "For my lunch today, I had <b>1 cup of rice</b>, <b>Fried Chicken</b>, and an <b>apple</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates and Protein:</b> The rice provides energy and the chicken contains protein.<br>• <b>Vitamins:</b> The apple contains dietary fiber and vitamins."
+          },
+          {
+            type: "Dinner",
+            image: "5.3.jpg",
+            caption: "For my dinner today, I had <b>2 Cups of rice</b> and <b>Sardines</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates and Protein:</b> The rice contains energy and the sardines contain marine protein and healthy fats."
+          }
+        ]
+      },
+      {
+        day: "Day 6: Sunday",
+        username: "johnangel",
+        meals: [
+          {
+            type: "Breakfast",
+            image: "6.1.jpg",
+            caption: "For my breakfast today, I had <b>Wheat Bread</b>, a <b>Scrambled Egg</b>, and a glass of <b>milk</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates and Protein:</b> The bread contains carbs and the egg contains protein.<br>• <b>Minerals:</b> The milk contains essential calcium."
+          },
+          {
+            type: "Lunch",
+            image: "6.2.jpg",
+            caption: "For my lunch today, I had <b>2 cups of rice</b>, <b>fried chicken</b>, and a <b>banana</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates:</b> The rice and banana contain energy sources to keep me active.<br>• <b>Protein:</b> The fried chicken contains protein to support muscle recovery.<br>• <b>Vitamins:</b> The banana contains potassium."
+          },
+          {
+            type: "Dinner",
+            image: "6.3.jpg",
+            caption: "For my dinner today, I had <b>1 cup of rice</b> and <b>Pinakbet</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates and Minerals:</b> The rice contains energy and the vegetables contain essential minerals."
+          }
+        ]
+      },
+      {
+        day: "Day 7: Monday",
+        username: "johnangel",
+        meals: [
+          {
+            type: "Breakfast",
+            image: "7.1.jpg",
+            caption: "For my breakfast today, I had <b>Boiled Eggs</b> and a glass of <b>milk</b>.<br><br>What is inside my food:<br>• <b>Protein and Minerals:</b> The eggs contain protein and the milk contains calcium."
+          },
+          {
+            type: "Lunch",
+            image: "7.2.jpg",
+            caption: "For my lunch today, I had <b>2 cups of rice</b>, <b>humba</b>, and an <b>orange</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates and Fats:</b> The rice contains energy and the humba contains savory fats and protein.<br>• <b>Vitamins:</b> The orange contains Vitamin C to keep me fresh."
+          },
+          {
+            type: "Dinner",
+            image: "7.3.jpg",
+            caption: "For my dinner today, I had <b>2 cups of rice</b> and <b>scrambled eggs</b>.<br><br>What is inside my food:<br>• <b>Carbohydrates and Protein:</b> The rice contains carbohydrates and the eggs contain protein to finish the meal plan."
+          }
+        ]
+      },
+      {
+        day: "Paper Meal Plan Documentation",
+        username: "johnangel",
+        meals: [
+          {
+            type: "Page 1 - Weekly Overview",
+            image: "8.1.jpg",
+            caption: "Physical Documentation Page 1: Weekly Overview Sheet submitted for course evaluation."
+          },
+          {
+            type: "Page 2 - Detailed Breakdown",
+            image: "8.2.jpg",
+            caption: "Physical Documentation Page 2: Detailed Nutritional calculations breakdown."
+          },
+          {
+            type: "Page 3 - Reflections & Evaluation",
+            image: "8.3.jpg",
+            caption: "Physical Documentation Page 3: Personal summary, reflections, and professor signing block."
+          }
+        ]
+      }
+    ];
+
+    // Force clear cache so updated pfp.jpg and text take effect immediately
+    if (!localStorage.getItem('initialized_v8')) {
+      localStorage.removeItem('mealPlanData');
+      localStorage.removeItem('profileData');
+      localStorage.setItem('initialized_v8', 'true');
+    }
+
+    let profileData = JSON.parse(localStorage.getItem('profileData')) || defaultProfileData;
+    let mealPlanData = JSON.parse(localStorage.getItem('mealPlanData')) || defaultMealPlanData;
+    const postIndices = mealPlanData.map(() => 0);
+    let editModeUnlocked = false;
+
+    function renderProfile() {
+      document.getElementById('profile-name').innerText = profileData.name;
+      document.getElementById('profile-subtitle').innerText = profileData.subtitle;
+      document.getElementById('profile-bio').innerHTML = profileData.bio;
+
+      const avatarInner = document.getElementById('profile-avatar-inner');
+      if (profileData.avatar && profileData.avatar.trim() !== "") {
+        avatarInner.innerHTML = `<img src="${profileData.avatar}" class="w-full h-full object-cover">`;
+      } else {
+        avatarInner.innerHTML = profileData.name ? profileData.name.charAt(0).toUpperCase() : "J";
+      }
+
+      const btnContainer = document.getElementById('profile-edit-btn-container');
+      if (editModeUnlocked) {
+        btnContainer.innerHTML = `<button onclick="toggleProfileEditor()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold py-1.5 rounded-lg transition-colors">Edit Profile Info</button>`;
+      } else {
+        btnContainer.innerHTML = '';
+        document.getElementById('profile-editor-drawer').classList.add('hidden');
+      }
+    }
+
+    function toggleMasterEditor() {
+      editModeUnlocked = !editModeUnlocked;
+      const badge = document.getElementById('edit-mode-badge');
+      if(editModeUnlocked) {
+        badge.classList.remove('hidden');
+        alert("🔒 Secret Edit Mode UNLOCKED! Edit buttons are now available.");
+      } else {
+        badge.classList.add('hidden');
+        alert("🔒 Secret Edit Mode LOCKED.");
+      }
+      renderProfile();
+      renderFeed();
+    }
+
+    function toggleProfileEditor() {
+      const drawer = document.getElementById('profile-editor-drawer');
+      drawer.classList.toggle('hidden');
+      if(!drawer.classList.contains('hidden')) {
+        document.getElementById('input-prof-img').value = profileData.avatar;
+        document.getElementById('input-prof-name').value = profileData.name;
+        document.getElementById('input-prof-sub').value = profileData.subtitle;
+        document.getElementById('input-prof-bio').value = profileData.bio.replace(/<br\s*[\/]?>/gi, '\n');
+      }
+    }
+
+    function saveProfileEdit() {
+      profileData.avatar = document.getElementById('input-prof-img').value;
+      profileData.name = document.getElementById('input-prof-name').value;
+      profileData.subtitle = document.getElementById('input-prof-sub').value;
+      profileData.bio = document.getElementById('input-prof-bio').value.replace(/\n/g, '<br>');
+
+      localStorage.setItem('profileData', JSON.stringify(profileData));
+      renderProfile();
+      toggleProfileEditor();
+      alert("Profile updated successfully!");
+    }
+
+    function saveData() {
+      localStorage.setItem('mealPlanData', JSON.stringify(mealPlanData));
+    }
+
+    function renderFeed() {
+      const container = document.getElementById('feed-container');
+      container.innerHTML = '';
+
+      mealPlanData.forEach((postData, postIdx) => {
+        const currentMealIdx = postIndices[postIdx];
+        const currentMeal = postData.meals[currentMealIdx];
+        const totalMeals = postData.meals.length;
+
+        const postElement = document.createElement('article');
+        postElement.className = 'bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm flex flex-col relative';
+
+        postElement.innerHTML = `
+          <!-- Post Header -->
+          <div class="px-4 py-3 flex items-center justify-between border-b border-gray-100">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-[2px]">
+                <div class="w-full h-full bg-white rounded-full flex items-center justify-center font-bold text-xs text-gray-700 overflow-hidden">
+                  ${profileData.avatar ? `<img src="${profileData.avatar}" class="w-full h-full object-cover">` : (profileData.name ? profileData.name.charAt(0).toUpperCase() : 'J')}
+                </div>
+              </div>
+              <div>
+                <span class="font-semibold text-xs text-gray-900">@${postData.username}</span>
+                <p class="text-[10px] text-gray-400">${postData.day}</p>
+              </div>
+            </div>
+            
+            ${editModeUnlocked ? `
+              <button onclick="toggleEditor(${postIdx})" class="flex items-center space-x-1 bg-blue-50 text-blue-600 text-xs px-2.5 py-1 rounded-lg font-medium">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                <span>Edit Post</span>
+              </button>
+            ` : `
+              <i data-lucide="more-horizontal" class="w-4 h-4 text-gray-400"></i>
+            `}
+          </div>
+
+          <!-- Carousel Image Section -->
+          <div class="relative w-full aspect-video bg-gray-900 group select-none overflow-hidden touch-pan-y" 
+               id="carousel-${postIdx}">
+            <img src="${currentMeal.image}" alt="${currentMeal.type}" class="w-full h-full object-cover transition-all duration-300 pointer-events-none" />
+
+            <div class="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-medium px-2.5 py-1 rounded-full">
+              ${currentMealIdx + 1}/${totalMeals}
+            </div>
+
+            ${totalMeals > 1 ? `
+              <button onclick="changeSlide(${postIdx}, -1)" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full transition-all">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              </button>
+              <button onclick="changeSlide(${postIdx}, 1)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full transition-all">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              </button>
+            ` : ''}
+          </div>
+
+          <!-- Post Actions Bar -->
+          <div class="px-4 pt-3 pb-1 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <i data-lucide="heart" class="w-5 h-5 text-gray-700 hover:text-red-500 cursor-pointer transition-colors"></i>
+              <i data-lucide="message-circle" class="w-5 h-5 text-gray-700"></i>
+              <i data-lucide="send" class="w-5 h-5 text-gray-700"></i>
+            </div>
+            
+            <div class="flex items-center space-x-1">
+              ${postData.meals.map((_, dotIdx) => `
+                <button onclick="goToSlide(${postIdx}, ${dotIdx})" class="w-1.5 h-1.5 rounded-full transition-all ${dotIdx === currentMealIdx ? 'bg-blue-600 w-3' : 'bg-gray-300'}" aria-label="Go to slide ${dotIdx + 1}"></button>
+              `).join('')}
+            </div>
+
+            <i data-lucide="bookmark" class="w-5 h-5 text-gray-700"></i>
+          </div>
+
+          <!-- Post Details with HTML-supported Caption rendering -->
+          <div class="px-4 py-3 flex flex-col space-y-2">
+            <div class="max-h-48 overflow-y-auto custom-scrollbar pr-2">
+              <p class="text-xs text-gray-800 leading-relaxed whitespace-pre-line">
+                <span class="font-semibold text-gray-900 mr-1.5">@${postData.username}</span>
+                <span class="font-medium text-blue-600">[${currentMeal.type}]</span> <span id="caption-text-${postIdx}-${currentMealIdx}">${currentMeal.caption}</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- HIDDEN EDIT DRAWER -->
+          ${editModeUnlocked ? `
+            <div id="editor-${postIdx}" class="hidden bg-gray-50 border-t border-gray-200 p-4 space-y-3">
+              <div class="flex items-center justify-between border-b border-gray-200 pb-2">
+                <span class="text-xs font-bold text-gray-900 uppercase">Editing Slide ${currentMealIdx + 1} of ${totalMeals}</span>
+                <span class="text-[10px] text-blue-600 font-semibold">Saves to Browser Storage</span>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold text-gray-600 mb-1">Image Filename / URL:</label>
+                <input type="text" id="input-img-${postIdx}-${currentMealIdx}" value="${currentMeal.image}" 
+                  class="w-full text-xs p-2 border border-gray-300 rounded-lg bg-white">
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold text-gray-600 mb-1">Blue Title / Label:</label>
+                <input type="text" id="input-type-${postIdx}-${currentMealIdx}" value="${currentMeal.type}" 
+                  class="w-full text-xs p-2 border border-gray-300 rounded-lg bg-white font-medium text-blue-600">
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold text-gray-600 mb-1">Caption Text (You can use &lt;b&gt;bold&lt;/b&gt; or &lt;i&gt;italic&lt;/i&gt; tags):</label>
+                <textarea id="input-cap-${postIdx}-${currentMealIdx}" rows="6" 
+                  class="w-full text-xs p-2 border border-gray-300 rounded-lg bg-white font-mono">${currentMeal.caption}</textarea>
+              </div>
+
+              <div class="flex space-x-2 pt-1">
+                <button onclick="saveMealEdit(${postIdx}, ${currentMealIdx})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 rounded-lg">
+                  Save Changes to Slide ${currentMealIdx + 1}
+                </button>
+              </div>
+            </div>
+          ` : ''}
+        `;
+
+        container.appendChild(postElement);
+
+        // Render HTML inside captions safely
+        const captionEl = document.getElementById(`caption-text-${postIdx}-${currentMealIdx}`);
+        if (captionEl) {
+          captionEl.innerHTML = currentMeal.caption;
+        }
+
+        const carouselEl = document.getElementById(`carousel-${postIdx}`);
+        let startX = 0;
+        let endX = 0;
+
+        carouselEl.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
+        carouselEl.addEventListener('touchend', (e) => { endX = e.changedTouches[0].clientX; handleSwipe(postIdx, startX, endX); }, { passive: true });
+        carouselEl.addEventListener('mousedown', (e) => { startX = e.clientX; });
+        carouselEl.addEventListener('mouseup', (e) => { endX = e.clientX; handleSwipe(postIdx, startX, endX); });
+      });
+
+      lucide.createIcons();
+    }
+
+    function toggleEditor(postIdx) {
+      const editor = document.getElementById(`editor-${postIdx}`);
+      editor.classList.toggle('hidden');
+    }
+
+    function saveMealEdit(postIdx, mealIdx) {
+      const newImg = document.getElementById(`input-img-${postIdx}-${mealIdx}`).value;
+      const newType = document.getElementById(`input-type-${postIdx}-${mealIdx}`).value;
+      const newCap = document.getElementById(`input-cap-${postIdx}-${mealIdx}`).value;
+
+      mealPlanData[postIdx].meals[mealIdx].image = newImg;
+      mealPlanData[postIdx].meals[mealIdx].type = newType;
+      mealPlanData[postIdx].meals[mealIdx].caption = newCap;
+
+      saveData();
+      renderFeed();
+      toggleEditor(postIdx);
+      alert("Changes saved successfully!");
+    }
+
+    function handleSwipe(postIdx, startX, endX) {
+      const threshold = 40;
+      if (startX - endX > threshold) changeSlide(postIdx, 1);
+      else if (endX - startX > threshold) changeSlide(postIdx, -1);
+    }
+
+    function changeSlide(postIdx, direction) {
+      const totalMeals = mealPlanData[postIdx].meals.length;
+      let newIdx = postIndices[postIdx] + direction;
+      if (newIdx < 0) newIdx = 0;
+      if (newIdx >= totalMeals) newIdx = totalMeals - 1;
+      postIndices[postIdx] = newIdx;
+      renderFeed();
+    }
+
+    function goToSlide(postIdx, targetIdx) {
+      postIndices[postIdx] = targetIdx;
+      renderFeed();
+    }
+
+    renderProfile();
+    renderFeed();
+  </script>
+</body>
+</html>
